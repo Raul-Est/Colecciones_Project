@@ -1,0 +1,15 @@
+<!--
+    Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+    Software privativo. Uso no autorizado expresamente prohibido.
+-->
+{% extends "base.html" %}
+{% block title %}Mi cuenta{% endblock %}
+{% block content %}
+    <h1>Bienvenido, {{ user.get_short_name }}</h1>
+    <p>Email: {{ user.email }}</p>
+    <p>Estado: {{ user.get_account_status_display }}</p>
+    <form method="post" action="{% url 'users:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Cerrar sesión</button>
+    </form>
+{% endblock %}

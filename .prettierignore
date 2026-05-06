@@ -1,0 +1,2 @@
+# Prettier no debe tocar templates Django (sintaxis incompatible)
+templates/

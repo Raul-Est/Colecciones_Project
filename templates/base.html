@@ -1,46 +1,46 @@
 <!--
-  Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
-  Software privativo. Uso no autorizado expresamente prohibido.
+    Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+    Software privativo. Uso no autorizado expresamente prohibido.
 -->
 <!DOCTYPE html>
 {% load static %}
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Colecciones{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
-  {% block extra_css %}{% endblock %}
-</head>
-<body>
-  <header>
-    <nav>
-      <a href="/">Colecciones</a>
-      {% if user.is_authenticated %}
-        <span>{{ user.email }}</span>
-        <a href="{% url 'logout' %}">Salir</a>
-      {% else %}
-        <a href="{% url 'login' %}">Entrar</a>
-      {% endif %}
-    </nav>
-  </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}Colecciones{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body>
+        <header>
+            <nav>
+                <a href="/">Colecciones</a>
+                {% if user.is_authenticated %}
+                    <span>{{ user.email }}</span>
+                    <a href="{% url 'users:logout' %}">Salir</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}">Entrar</a>
+                {% endif %}
+            </nav>
+        </header>
 
-  <main>
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+        <main>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
-    {% block content %}{% endblock %}
-  </main>
+            {% block content %}{% endblock %}
+        </main>
 
-  <footer>
-    <p>&copy; {% now "Y" %} Colecciones</p>
-  </footer>
+        <footer>
+            <p>&copy; {% now "Y" %} Colecciones</p>
+        </footer>
 
-  {% block extra_js %}{% endblock %}
-</body>
+        {% block extra_js %}{% endblock %}
+    </body>
 </html>

@@ -1,0 +1,15 @@
+<!--
+    Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+    Software privativo. Uso no autorizado expresamente prohibido.
+-->
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+    <h1>Entrar</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Entrar</button>
+    </form>
+    <p>¿No tienes cuenta? <a href="{% url 'users:register' %}">Regístrate</a></p>
+{% endblock %}
