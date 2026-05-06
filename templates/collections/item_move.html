@@ -1,0 +1,108 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
+{% extends "base.html" %}
+
+{% block title %}Mover elemento â€” {{ item.name }}{% endblock %}
+
+{% block content %}
+    <article aria-labelledby="move-titulo">
+        <header class="page-header">
+            <div>
+                <p class="meta">
+                    <a href="{% url 'collections:collection_detail' collection.slug %}">{{ collection.name }}</a>
+                    {% if item.group %} â€º {{ item.group.name }}{% endif %}
+                </p>
+                <h1 id="move-titulo">Mover: {{ item.name }}</h1>
+            </div>
+        </header>
+
+        {% if conflicts %}
+            <div class="alert alert-warning" role="alert">
+                <p><strong>âš  AtenciÃ³n: elemento duplicado</strong></p>
+                <p>
+                    La colecciÃ³n destino ya contiene un elemento con el mismo nombre.
+                    Si confirmas, las cantidades se sumarÃ¡n:
+                </p>
+                <ul>
+                    {% for src, existing in conflicts %}
+                        <li>
+                            <strong>{{ existing.name }}</strong> â€”
+                            tienes <strong>{{ existing.quantity }}</strong> en destino
+                            + <strong>{{ src.quantity }}</strong> que mueves
+                            = <strong>{{ existing.quantity|add:src.quantity }}</strong> en total
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p>Â¿Quieres tener {{ existing.quantity|add:src.quantity }} unidades de este elemento en la colecciÃ³n destino?</p>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="target_collection" value="{{ target_collection_id }}">
+                {% if target_group_id %}
+                    <input type="hidden" name="target_group" value="{{ target_group_id }}">
+                {% endif %}
+                <input type="hidden" name="confirmed" value="1">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-warning">SÃ­, fusionar cantidades</button>
+                    <a href="{% url 'collections:collection_detail' collection.slug %}" class="btn">Cancelar</a>
+                </div>
+            </form>
+        {% else %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="target_collection">ColecciÃ³n destino</label>
+                <select id="target_collection" name="target_collection" class="form-control" required>
+                    <option value="">â€” Selecciona colecciÃ³n â€”</option>
+                    {% for col in user_collections %}
+                        <option value="{{ col.pk }}"{% if col.pk == collection.pk %} selected{% endif %}>
+                            {{ col.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="target_group">Grupo destino (opcional)</label>
+                <select id="target_group" name="target_group" class="form-control">
+                    <option value="">â€” Sin grupo â€”</option>
+                    {% for g in all_groups %}
+                        <option value="{{ g.pk }}" data-collection="{{ g.collection_id }}">
+                            {{ g.collection.name }} â€º {{ g.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Mover elemento</button>
+                <a href="{% url 'collections:collection_detail' collection.slug %}" class="btn">Cancelar</a>
+            </div>
+        </form>
+        {% endif %}
+    </article>
+
+    {% if not conflicts %}
+    <script>
+        (function () {
+            const colSelect = document.getElementById('target_collection');
+            const groupSelect = document.getElementById('target_group');
+            const allOpts = Array.from(groupSelect.options).filter(function (o) {
+                return o.value !== '';
+            });
+
+            function filterGroups() {
+                const colId = colSelect.value;
+                groupSelect.innerHTML = '<option value="">â€” Sin grupo â€”</option>';
+                allOpts
+                    .filter(function (o) { return o.dataset.collection === colId; })
+                    .forEach(function (o) { groupSelect.appendChild(o.cloneNode(true)); });
+            }
+
+            colSelect.addEventListener('change', filterGroups);
+            filterGroups();
+        })();
+    </script>
+    {% endif %}
+{% endblock %}

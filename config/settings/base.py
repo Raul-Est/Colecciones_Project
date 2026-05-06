@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.collections.apps.CollectionsConfig',
     'apps.audit.apps.AuditConfig',
+    'apps.billing.apps.BillingConfig',
     'apps.common',
 ]
 

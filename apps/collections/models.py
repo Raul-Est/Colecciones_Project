@@ -65,6 +65,40 @@ class Collection(models.Model):
         return f'{self.name} ({self.owner.email})'
 
 
+class CollectionGroup(models.Model):
+    collection = models.ForeignKey(
+        Collection,
+        on_delete=models.CASCADE,
+        related_name='groups',
+        verbose_name='colección',
+    )
+    name = models.CharField(max_length=200, verbose_name='nombre')
+    slug = models.SlugField(max_length=220, blank=True, verbose_name='slug')
+    description = models.TextField(blank=True, verbose_name='descripción')
+    position = models.PositiveIntegerField(default=0, verbose_name='posición')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'grupo'
+        verbose_name_plural = 'grupos'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['collection', 'slug'],
+                name='unique_group_collection_slug',
+            )
+        ]
+        ordering = ['position', 'name']
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.name} ({self.collection.name})'
+
+
 class CollectionItem(models.Model):
 
     class Status(models.TextChoices):
@@ -78,6 +112,14 @@ class CollectionItem(models.Model):
         on_delete=models.CASCADE,
         related_name='items',
         verbose_name='colección',
+    )
+    group = models.ForeignKey(
+        CollectionGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='items',
+        verbose_name='grupo',
     )
     name = models.CharField(max_length=200, verbose_name='nombre')
     slug = models.SlugField(max_length=220, blank=True, verbose_name='slug')
@@ -96,6 +138,7 @@ class CollectionItem(models.Model):
         blank=True,
         verbose_name='carátula',
     )
+    quantity = models.PositiveIntegerField(default=1, verbose_name='cantidad')
     position = models.PositiveIntegerField(default=0, verbose_name='posición')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

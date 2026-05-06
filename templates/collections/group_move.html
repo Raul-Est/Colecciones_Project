@@ -1,0 +1,71 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
+{% extends "base.html" %}
+
+{% block title %}Mover grupo â€” {{ group.name }}{% endblock %}
+
+{% block content %}
+    <article aria-labelledby="move-titulo">
+        <header class="page-header">
+            <div>
+                <p class="meta">
+                    <a href="{% url 'collections:collection_detail' collection.slug %}">{{ collection.name }}</a>
+                </p>
+                <h1 id="move-titulo">Mover grupo: {{ group.name }}</h1>
+                <p>Todos los elementos del grupo se moverÃ¡n a la colecciÃ³n destino.</p>
+            </div>
+        </header>
+
+        {% if conflicts %}
+            <div class="alert alert-warning" role="alert">
+                <p><strong>âš  AtenciÃ³n: elementos duplicados</strong></p>
+                <p>
+                    La colecciÃ³n destino ya contiene elementos con los mismos nombres.
+                    Si confirmas, las cantidades se sumarÃ¡n:
+                </p>
+                <ul>
+                    {% for src, existing in conflicts %}
+                        <li>
+                            <strong>{{ existing.name }}</strong> â€”
+                            {{ existing.quantity }} en destino
+                            + {{ src.quantity }} que mueves
+                            = <strong>{{ existing.quantity|add:src.quantity }}</strong> en total
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p>El resto de elementos sin duplicado se moverÃ¡n con normalidad.</p>
+            </div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="target_collection" value="{{ target_collection_id }}">
+                <input type="hidden" name="confirmed" value="1">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-warning">SÃ­, fusionar y mover grupo</button>
+                    <a href="{% url 'collections:group_detail' collection.slug group.slug %}" class="btn">Cancelar</a>
+                </div>
+            </form>
+        {% elif user_collections %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="target_collection">ColecciÃ³n destino</label>
+                    <select id="target_collection" name="target_collection" class="form-control" required>
+                        <option value="">â€” Selecciona colecciÃ³n â€”</option>
+                        {% for col in user_collections %}
+                            <option value="{{ col.pk }}">{{ col.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Mover grupo</button>
+                    <a href="{% url 'collections:group_detail' collection.slug group.slug %}" class="btn">Cancelar</a>
+                </div>
+            </form>
+        {% else %}
+            <p class="empty-state">No tienes otras colecciones a las que mover este grupo.</p>
+            <a href="{% url 'collections:group_detail' collection.slug group.slug %}" class="btn">Volver</a>
+        {% endif %}
+    </article>
+{% endblock %}

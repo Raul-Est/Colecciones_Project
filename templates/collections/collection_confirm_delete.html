@@ -1,14 +1,15 @@
 <!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
 {% extends "base.html" %}
 
-{% block title %}Eliminar colección{% endblock %}
+{% block title %}Eliminar colecciÃ³n{% endblock %}
 
 {% block content %}
-  <h1>Eliminar colección</h1>
-  <p>¿Seguro que quieres eliminar <strong>{{ object.name }}</strong> y todos sus elementos?</p>
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
-    <a href="{% url 'collections:collection_detail' object.slug %}">Cancelar</a>
-  </form>
+    <h1>Eliminar colecciÃ³n</h1>
+    <p>Â¿Seguro que quieres eliminar <strong>{{ object.name }}</strong> y todos sus elementos?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">SÃ­, eliminar</button>
+        <a href="{% url 'collections:collection_detail' object.slug %}">Cancelar</a>
+    </form>
 {% endblock %}

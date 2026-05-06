@@ -556,18 +556,9 @@ Cobertura:
 - NudeNet score bajo acepta imagen (mock);
 - NudeNet no instalado no bloquea la subida (mock ImportError).
 
-## 8. Beta 2 ejecutable — LISTA PARA VALIDACION
+## 8. Beta 2 ejecutable — COMPLETADA
 
 Bloque D completado. 76 tests pasando. 0 errores ruff.
-
-La demo cliente de Beta 2 debe incluir:
-
-- registro y login;
-- perfil basico;
-- creacion de colecciones;
-- gestion de elementos;
-- caratulas;
-- navegacion coherente.
 
 Criterios de cierre cumplidos:
 
@@ -575,8 +566,115 @@ Criterios de cierre cumplidos:
 - la subida de imagenes esta asegurada con validators + NudeNet (13 tests);
 - las reglas de identidad son estables (35 tests de users pasando).
 
-Pendiente: ejecutar demo manual con registro+login+colecciones+elementos+caratulas antes de pasar a PlanTecnico2.md.
+Demo manual realizada: registro → login → colecciones → grupos → elementos → carátulas → navegación coherente.
 
-## 9. Siguiente paso natural
+## 9. Bloque E (parcial) — IMPLEMENTADO
 
-Tras cerrar Beta 2, continuar en PlanTecnico2.md y aplicar el modelo de datos definido para planes, suscripciones, suspension por impago, downgrade a free y estado excedido.
+Las siguientes funcionalidades del Bloque E están implementadas, validadas y con gate premium real.
+
+### E-parcial 1. CollectionGroup — COMPLETADO (migración 0002)
+
+Modelo CollectionGroup en apps/collections/models.py:
+
+- collection (FK a Collection, CASCADE)
+- name, slug (único por colección, auto-slugify)
+- description (opcional)
+- position (ordenación manual)
+- created_at, updated_at
+
+FK group en CollectionItem (SET_NULL, null=True, blank=True).
+
+CRUD completo con ownership enforcement:
+- group_create, group_detail, group_edit, group_delete en views.py
+- Sugerencias de nombres predefinidas por categoría en suggestions.py
+- Templates: group_form.html, group_detail.html, group_confirm_delete.html
+- Selectors: get_groups_for_collection, get_group_for_collection, get_ungrouped_items
+- Services: create_group, update_group
+- Admin: CollectionGroupInline, CollectionGroupAdmin
+
+Vista collection_detail muestra:
+- Sección "Grupos" (listado de grupos con acciones)
+- Sección "Sin grupo" (solo items con group=None)
+
+Vista group_detail muestra dos listas:
+- "Lo que tengo" (status=owned)
+- "Lista de deseos" (status=wanted)
+
+Pendiente: gate premium real implementado en la sesión siguiente (ver E-parcial 5).
+
+### E-parcial 2. Mover y copiar contenido — COMPLETADO
+
+Implementado en services.py, views.py y urls.py.
+
+Operaciones disponibles:
+
+1. **Mover elemento** (`/<col>/items/<item>/mover/`)
+   - Mueve el elemento a otra colección y/o grupo del mismo usuario.
+   - Si el nombre ya existe en destino: aviso con fusión de cantidades, requiere confirmación explícita.
+
+2. **Mover grupo** (`/<col>/grupos/<grupo>/mover/`)
+   - Mueve el grupo completo con todos sus elementos a otra colección.
+   - Detecta duplicados de nombres en destino, pide confirmación.
+
+3. **Transferir colección** (`/<col>/transferir/`)
+   - Mover: todos los grupos e items pasan al destino, la colección origen queda vacía.
+   - Copiar: se duplican en destino; la colección origen no cambia.
+   - Detecta duplicados de nombres en destino, pide confirmación.
+
+Lógica anti-duplicado:
+- Función get_conflicts() detecta colisiones de nombre antes de ejecutar.
+- En colisión: se muestra pantalla intermedia con el resultado previsto (suma de cantidades).
+- El usuario confirma o cancela. Solo se fusionan si confirma.
+
+### E-parcial 3. Campo quantity en CollectionItem — COMPLETADO (migración 0003)
+
+- Campo quantity (PositiveIntegerField, default=1) añadido a CollectionItem.
+- Visible y editable en CollectionItemForm (no obligatorio, default=1 si no se envía).
+- Badge visual "x2", "x3"... en cards cuando quantity > 1.
+- En admin: visible en inline y en CollectionItemAdmin list_display.
+
+### E-parcial 4. Calidad de código — COMPLETADO
+
+- Indentación 4 espacios en todos los archivos HTML.
+- Copyright estandarizado en todos los .py y .html (2 líneas exactas).
+- Sin BOM UTF-8 en ningún archivo.
+- 76 tests, 0 errores ruff, 0 issues Django check.
+
+### E-parcial 5. App billing y gate premium real — COMPLETADO (migración billing/0001)
+
+Nueva app `apps/billing`:
+
+- Modelo `Plan`: code, name, tier (free/premium), límites (max_collections, max_items_total,
+  max_storage_bytes), funcionalidades (can_use_groups, can_upload_custom_images, etc.), timestamps.
+- Modelo `Subscription`: user, plan, status (active/suspended/canceled/expired), fechas de periodo,
+  grace_until, campos de pasarela externa para futuro, auto_renew.
+- Servicio `user_can_use_groups(user)`: staff → True; suscripción activa con plan.can_use_groups → True; resto → False.
+- Admin registrado para Plan y Subscription.
+
+Gate en `group_create` (apps/collections/views.py):
+
+- Si `user_can_use_groups` devuelve False → redirect a collection_detail con mensaje de error.
+- Si devuelve True → flujo normal de creación.
+
+85 tests pasando, 0 errores ruff.
+
+### E-parcial 6. Navegación contextual en operaciones de elemento — COMPLETADO
+
+Mejoras de UX para que las vistas de item respeten el contexto de grupo:
+
+- `item_create`: acepta parámetro GET `?group=<slug>` para pre-seleccionar el grupo en el
+  formulario. Tras guardar, si el item tiene grupo, redirige a `group_detail`; si no, a
+  `collection_detail`.
+- `item_edit`: tras guardar, redirige a `group_detail` si el item tiene grupo asignado.
+- `item_delete`: guarda la referencia al grupo antes de borrar. Tras borrar, redirige a
+  `group_detail` si el item tenía grupo.
+- `group_detail.html`: botón "+ Añadir elemento" junto al encabezado de "Lo que tengo",
+  con enlace `?group={{ group.slug }}` para pre-seleccionar el grupo.
+
+85 tests pasando, 0 errores ruff.
+
+## 10. Siguiente paso
+
+Continuar en PlanTecnico2.md desde el Paso 44 (suspensión por impago) y Paso 48 (vistas de
+cuenta/plan). El Paso 43 (modelar capacidades por plan) se considera cubierto con la implementación
+de Plan.can_use_groups; ampliar límites numéricos cuando la UI de cuenta esté lista.

@@ -51,6 +51,7 @@ Campos recomendados:
 - max_storage_bytes
 - can_upload_custom_images
 - can_use_public_collections
+- can_use_groups (boolean: permite crear grupos/subcolecciones dentro de colecciones)
 - can_use_advanced_features
 - created_at
 - updated_at
@@ -60,6 +61,7 @@ Notas de diseño:
 - code debe ser unico.
 - tier puede ser free o premium al inicio, pero debe permitir crecer.
 - los limites numericos deben admitir null solo si null significa ilimitado y esa regla queda muy clara.
+- can_use_groups es false en free y true en premium. Si un usuario baja a free, sus grupos existentes se conservan pero no puede crear nuevos.
 
 Constraints recomendados:
 
@@ -69,8 +71,8 @@ Constraints recomendados:
 
 Ejemplo conceptual:
 
-- FREE: 5 colecciones, 200 items totales, 200 MB, sin funciones avanzadas.
-- PREMIUM: 100 colecciones, 5000 items totales, 5 GB, con funciones avanzadas.
+- FREE: 5 colecciones, 200 items totales, 200 MB, sin grupos, sin funciones avanzadas.
+- PREMIUM: 100 colecciones, 5000 items totales, 5 GB, con grupos ilimitados por coleccion, con funciones avanzadas.
 
 ### 3.2 Subscription
 

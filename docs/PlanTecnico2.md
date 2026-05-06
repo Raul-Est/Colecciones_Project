@@ -35,10 +35,36 @@ Accion:
 2. definir que limites tiene free;
 3. definir que limites tiene premium;
 4. modelar capacidades de forma explicita y no dispersa en la interfaz.
+5. incluir la capacidad can_use_groups: solo premium puede crear grupos dentro de sus colecciones.
 
 Resultado esperado:
 
 - las reglas de capacidad dejan de ser ambiguas y pasan a formar parte del dominio.
+
+### Paso 43b. Implementar grupos dentro de colecciones (premium)
+
+Estado: **COMPLETADO**
+
+Lo implementado:
+
+- Modelo CollectionGroup con migración 0002 aplicada.
+- FK group en CollectionItem (SET_NULL, null=True) con migración 0002.
+- CRUD de grupos con ownership enforcement en views, selectors y services.
+- Templates group_form, group_detail (listas owned/wanted), group_confirm_delete.
+- collection_detail actualizado con sección de grupos y sección sin grupo.
+- Campo quantity en CollectionItem (migración 0003).
+- Operaciones de mover/copiar elemento, grupo y colección completa con detección de conflictos y paso de confirmación.
+- Modelos Plan y Subscription en la app `apps/billing` (migración 0001 aplicada).
+- Servicio `user_can_use_groups(user)` en `apps/billing/services.py`.
+- Gate real en `group_create`: usuarios free son redirigidos con mensaje de error; staff siempre tiene acceso.
+- 85 tests pasando, 0 errores ruff.
+
+Resultado:
+
+- un usuario premium puede crear grupos en su coleccion;
+- cada grupo muestra por separado lo que tiene y lo que desea;
+- un usuario free recibe mensaje de error y no puede crear nuevos grupos, pero conserva los existentes;
+- no hay exposicion cruzada entre usuarios.
 
 ### Paso 44. Implementar suspension por impago sin perdida de datos
 
@@ -152,12 +178,13 @@ Resultado esperado:
 Checklist de cierre:
 
 1. existe plan y suscripcion modelados;
-2. existen limites por plan;
+2. existen limites por plan incluyendo can_use_groups;
 3. la suspension no borra datos;
 4. la reactivacion restaura privilegios;
-5. el downgrade a free no borra contenido;
+5. el downgrade a free no borra contenido ni grupos existentes;
 6. el estado excedido esta controlado;
-7. las pruebas del bloque estan en verde.
+7. los grupos premium funcionan con gate correcto;
+8. las pruebas del bloque estan en verde.
 
 ## 4. Bloque F. Auditoria y endurecimiento serio
 

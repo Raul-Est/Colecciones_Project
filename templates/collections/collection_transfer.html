@@ -1,0 +1,91 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
+{% extends "base.html" %}
+
+{% block title %}Transferir contenido — {{ collection.name }}{% endblock %}
+
+{% block content %}
+    <article aria-labelledby="transfer-titulo">
+    <header class="page-header">
+        <div>
+        <p class="meta">
+            <a href="{% url 'collections:collection_detail' collection.slug %}">{{ collection.name }}</a>
+        </p>
+        <h1 id="transfer-titulo">Transferir contenido</h1>
+        </div>
+    </header>
+
+    {% if conflicts %}
+      <div class="alert alert-warning" role="alert">
+        <p><strong>⚠ Atención: elementos duplicados</strong></p>
+        <p>
+          La colección destino ya contiene elementos con los mismos nombres.
+          Si confirmas, las cantidades se sumarán en lugar de crear entradas nuevas:
+        </p>
+        <ul>
+          {% for src, existing in conflicts %}
+            <li>
+              <strong>{{ existing.name }}</strong> —
+              {{ existing.quantity }} en destino
+              + {{ src.quantity }} del origen
+              = <strong>{{ existing.quantity|add:src.quantity }}</strong> en total
+            </li>
+          {% endfor %}
+        </ul>
+        <p>El resto de elementos sin duplicado se transferirán con normalidad.</p>
+      </div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="target_collection" value="{{ target_collection_id }}">
+        <input type="hidden" name="action" value="{{ selected_action }}">
+        <input type="hidden" name="confirmed" value="1">
+        <div class="form-actions">
+          <button type="submit" class="btn btn-warning">Sí, confirmar transferencia</button>
+          <a href="{% url 'collections:collection_detail' collection.slug %}" class="btn">Cancelar</a>
+        </div>
+      </form>
+    {% elif user_collections %}
+        <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-group">
+            <fieldset>
+            <legend>Acción</legend>
+            <label class="form-check">
+                <input type="radio" name="action" value="move" required>
+                <span>
+                <strong>Mover</strong> — los elementos y grupos desaparecen de
+                <em>{{ collection.name }}</em> y aparecen en la colección destino
+                </span>
+            </label>
+            <label class="form-check">
+                <input type="radio" name="action" value="copy">
+                <span>
+                <strong>Copiar</strong> — se duplican en la colección destino;
+                <em>{{ collection.name }}</em> no cambia
+                </span>
+            </label>
+            </fieldset>
+        </div>
+
+        <div class="form-group">
+            <label for="target_collection">Colección destino</label>
+            <select id="target_collection" name="target_collection" class="form-control" required>
+            <option value="">— Selecciona colección —</option>
+            {% for col in user_collections %}
+                <option value="{{ col.pk }}">{{ col.name }}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Ejecutar</button>
+            <a href="{% url 'collections:collection_detail' collection.slug %}" class="btn">Cancelar</a>
+        </div>
+        </form>
+    {% else %}
+        <p class="empty-state">No tienes otras colecciones a las que transferir el contenido.</p>
+        <a href="{% url 'collections:collection_detail' collection.slug %}" class="btn">Volver</a>
+    {% endif %}
+    </article>
+{% endblock %}

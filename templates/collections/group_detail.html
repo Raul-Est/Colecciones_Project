@@ -1,0 +1,97 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+    <article aria-labelledby="group-titulo">
+        <header class="page-header">
+            <div>
+                <p class="meta"><a href="{% url 'collections:collection_detail' collection.slug %}">{{ collection.name }}</a></p>
+                <h1 id="group-titulo">{{ group.name }}</h1>
+                {% if group.description %}
+                    <p>{{ group.description }}</p>
+                {% endif %}
+            </div>
+            <nav aria-label="Acciones del grupo">
+                <a href="{% url 'collections:group_edit' collection.slug group.slug %}" class="btn">Editar grupo</a>
+                <a href="{% url 'collections:group_move' collection.slug group.slug %}" class="btn">Mover grupo</a>
+                <a href="{% url 'collections:group_delete' collection.slug group.slug %}" class="btn btn-danger">Eliminar grupo</a>
+            </nav>
+        </header>
+
+        <section aria-labelledby="owned-titulo">
+            <header class="section-header">
+                <h2 id="owned-titulo">Lo que tengo</h2>
+                <a href="{% url 'collections:item_create' collection.slug %}?group={{ group.slug }}" class="btn">+ Añadir elemento</a>
+            </header>
+            {% if owned %}
+                <ul class="item-grid" role="list">
+                    {% for item in owned %}
+                        <li class="item-card">
+                            {% if item.cover %}
+                                <img src="{{ item.cover.url }}" alt="Caratula de {{ item.name }}"
+                                          class="item-card__cover" width="120" height="120" loading="lazy" />
+                            {% else %}
+                                <div class="item-card__cover item-card__cover--placeholder" aria-hidden="true"></div>
+                            {% endif %}
+                            <div class="item-card__body">
+                                <h3 class="item-card__name">{{ item.name }}</h3>
+                                {% if item.quantity > 1 %}
+                                    <span class="badge badge--quantity" title="Cantidad">x{{ item.quantity }}</span>
+                                {% endif %}
+                                {% if item.description %}
+                                    <p class="item-card__desc">{{ item.description|truncatechars:60 }}</p>
+                                {% endif %}
+                            </div>
+                            <nav class="item-card__actions" aria-label="Acciones para {{ item.name }}">
+                                <a href="{% url 'collections:item_edit' collection.slug item.slug %}">Editar</a>
+                                <a href="{% url 'collections:item_move' collection.slug item.slug %}">Mover</a>
+                                <a href="{% url 'collections:item_delete' collection.slug item.slug %}" class="link-danger">Eliminar</a>
+                            </nav>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">No hay elementos en posesion en este grupo.</p>
+            {% endif %}
+        </section>
+
+        <section aria-labelledby="wanted-titulo">
+            <header class="section-header">
+                <h2 id="wanted-titulo">Lista de deseos</h2>
+            </header>
+            {% if wanted %}
+                <ul class="item-grid" role="list">
+                    {% for item in wanted %}
+                        <li class="item-card">
+                            {% if item.cover %}
+                                <img src="{{ item.cover.url }}" alt="Caratula de {{ item.name }}"
+                                          class="item-card__cover" width="120" height="120" loading="lazy" />
+                            {% else %}
+                                <div class="item-card__cover item-card__cover--placeholder" aria-hidden="true"></div>
+                            {% endif %}
+                            <div class="item-card__body">
+                                <h3 class="item-card__name">{{ item.name }}</h3>
+                                {% if item.quantity > 1 %}
+                                    <span class="badge badge--quantity" title="Cantidad">x{{ item.quantity }}</span>
+                                {% endif %}
+                                {% if item.description %}
+                                    <p class="item-card__desc">{{ item.description|truncatechars:60 }}</p>
+                                {% endif %}
+                            </div>
+                            <nav class="item-card__actions" aria-label="Acciones para {{ item.name }}">
+                                <a href="{% url 'collections:item_edit' collection.slug item.slug %}">Editar</a>
+                                <a href="{% url 'collections:item_move' collection.slug item.slug %}">Mover</a>
+                                <a href="{% url 'collections:item_delete' collection.slug item.slug %}" class="link-danger">Eliminar</a>
+                            </nav>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">No hay elementos deseados en este grupo.</p>
+            {% endif %}
+        </section>
+    </article>
+{% endblock %}

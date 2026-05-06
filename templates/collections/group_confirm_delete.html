@@ -1,0 +1,16 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
+{% extends "base.html" %}
+
+{% block title %}Eliminar grupo{% endblock %}
+
+{% block content %}
+    <h1>Eliminar grupo</h1>
+    <p>Vas a eliminar el grupo <strong>{{ object.name }}</strong> de la coleccion <strong>{{ collection.name }}</strong>.</p>
+    <p>Los elementos asignados a este grupo no se eliminan; simplemente quedan sin grupo.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar eliminacion</button>
+        <a href="{% url 'collections:collection_detail' collection.slug %}">Cancelar</a>
+    </form>
+{% endblock %}

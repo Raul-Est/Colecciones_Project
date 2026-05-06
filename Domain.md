@@ -197,6 +197,28 @@ Reglas:
 - Un usuario solo puede gestionar sus propias colecciones salvo privilegios administrativos.
 - El slug debe ser único por usuario, no necesariamente global.
 
+#### Grupo de colección (premium)
+
+Permite a los usuarios premium organizar los elementos de una colección en subgrupos temáticos o por cualquier criterio personal.
+
+Campos sugeridos:
+
+- colección (FK a Collection, CASCADE).
+- nombre.
+- slug generado automáticamente desde el nombre.
+- descripción opcional.
+- posición para ordenación manual.
+- timestamps.
+
+Reglas:
+
+- Solo usuarios con suscripción activa premium pueden crear grupos.
+- Un grupo pertenece siempre a una colección concreta; no puede existir huérfano.
+- Los elementos de la colección pueden asociarse a un grupo o dejarse sin grupo.
+- Dentro de un grupo el usuario puede ver dos listas: los elementos que ya posee (status = owned) y los que desea añadir (status = wanted).
+- Si un usuario baja a free, sus grupos existentes quedan conservados pero no puede crear nuevos. Los elementos asociados a grupos siguen accesibles.
+- Si el usuario cancela la suscripción premium y los grupos quedan por encima del límite free, los grupos y sus asociaciones se conservan; simplemente no se permiten nuevas altas.
+
 #### Elemento de colección
 
 Representa cada unidad coleccionable.
@@ -204,12 +226,14 @@ Representa cada unidad coleccionable.
 Campos implementados:
 
 - colección (FK a Collection, CASCADE).
+- grupo (FK a CollectionGroup, SET_NULL, null=True, blank=True).
 - nombre.
 - slug generado automáticamente desde el nombre via slugify.
 - descripción.
 - comentario personal (privado por defecto).
 - estado: en posesión, deseado, vendido, prestado.
 - carátula (ImageField, upload_to='covers/', validación segura obligatoria).
+- cantidad (PositiveIntegerField, default=1): permite registrar más de una unidad del mismo elemento.
 - posición para ordenación manual.
 - timestamps.
 
@@ -218,6 +242,36 @@ Reglas:
 - No debe existir un elemento huérfano fuera de una colección.
 - El comentario personal debe tratarse como contenido privado salvo decisión explícita de visibilidad.
 - Las imágenes pasan por validación de tipo real, tamaño, dimensiones y análisis de contenido inapropiado antes de persistirse.
+- No pueden existir dos elementos con el mismo nombre dentro de la misma colección como entradas separadas; si se produce una colisión al mover o copiar, las cantidades se suman en un único elemento y el sistema avisa al usuario antes de ejecutar la fusión.
+
+#### Operaciones de transferencia entre colecciones
+
+Permiten reorganizar el contenido entre colecciones del mismo usuario.
+
+Operaciones disponibles:
+
+- **Mover elemento**: traslada un elemento a otra colección o a otro grupo, desapareciendo de la ubicación original.
+- **Mover grupo**: traslada un grupo completo con todos sus elementos a otra colección.
+- **Transferir contenido (mover)**: traslada todos los grupos y elementos de una colección a otra; la colección origen queda vacía.
+- **Transferir contenido (copiar)**: duplica todos los grupos y elementos en la colección destino; la colección origen no cambia.
+
+Reglas:
+
+- Solo el propietario puede mover o copiar su propio contenido.
+- Una colección no puede anidarse dentro de otra.
+- Si al mover o copiar existe un elemento con el mismo nombre en destino, el sistema detecta el conflicto, muestra un aviso al usuario con el resultado previsto de la fusión (suma de cantidades) y espera confirmación explícita antes de ejecutar.
+- Si el usuario cancela el aviso, no se realiza ningún cambio.
+- Los slugs de grupos y elementos se ajustan automáticamente en destino para evitar colisiones.
+
+#### Navegación contextual en operaciones de elemento
+
+Las vistas de edición, eliminación y creación de elementos respetan el contexto de grupo:
+
+- Al crear un elemento desde la vista de un grupo, el campo grupo queda pre-seleccionado.
+- Tras crear un elemento con grupo asignado, la navegación vuelve a la vista del grupo, no a la colección.
+- Tras editar un elemento que pertenece a un grupo, la navegación vuelve a la vista del grupo.
+- Tras eliminar un elemento que pertenecía a un grupo, la navegación vuelve a la vista del grupo.
+- Solo si el elemento no tiene grupo, la navegación vuelve a la vista de la colección.
 
 #### Carátula o imagen
 

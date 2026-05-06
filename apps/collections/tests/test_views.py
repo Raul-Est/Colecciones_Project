@@ -18,6 +18,7 @@ Cubre:
 import pytest
 from django.urls import reverse
 
+from apps.billing.models import Plan, Subscription
 from apps.collections.models import Collection, CollectionItem
 from apps.users.models import User
 
@@ -156,3 +157,48 @@ class TestItemDeleteView:
         response = cliente_auth.post(url)
         assert response.status_code == 302
         assert not CollectionItem.objects.filter(pk=item.pk).exists()
+
+
+# ── Gate premium en group_create ──────────────────────────────────────────────
+
+@pytest.fixture
+def plan_premium(db):
+    return Plan.objects.create(
+        code='premium',
+        name='Premium',
+        tier=Plan.Tier.PREMIUM,
+        can_use_groups=True,
+    )
+
+
+@pytest.mark.django_db
+class TestGroupCreateGate:
+
+    def test_usuario_free_no_puede_crear_grupo(self, cliente_auth, coleccion):
+        """Un usuario sin suscripción premium es redirigido con mensaje de error."""
+        url = reverse('collections:group_create', kwargs={'slug': coleccion.slug})
+        response = cliente_auth.get(url)
+        assert response.status_code == 302
+        assert response['Location'] == reverse(
+            'collections:collection_detail', kwargs={'slug': coleccion.slug}
+        )
+
+    def test_usuario_premium_puede_ver_formulario(self, cliente_auth, coleccion, usuario,
+                                                   plan_premium):
+        """Un usuario con suscripción activa premium ve el formulario de creación de grupo."""
+        Subscription.objects.create(
+            user=usuario,
+            plan=plan_premium,
+            status=Subscription.Status.ACTIVE,
+        )
+        url = reverse('collections:group_create', kwargs={'slug': coleccion.slug})
+        response = cliente_auth.get(url)
+        assert response.status_code == 200
+
+    def test_usuario_free_post_no_crea_grupo(self, cliente_auth, coleccion):
+        """Un POST de usuario free tampoco crea el grupo."""
+        from apps.collections.models import CollectionGroup
+        url = reverse('collections:group_create', kwargs={'slug': coleccion.slug})
+        response = cliente_auth.post(url, data={'name': 'Grupo X'})
+        assert response.status_code == 302
+        assert not CollectionGroup.objects.filter(collection=coleccion).exists()

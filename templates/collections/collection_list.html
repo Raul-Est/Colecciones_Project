@@ -1,38 +1,39 @@
 <!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+<!-- Software privativo. Uso no autorizado expresamente prohibido. -->
 {% extends "base.html" %}
 
 {% block title %}Mis colecciones{% endblock %}
 
 {% block content %}
-  <section aria-labelledby="colecciones-titulo">
-    <header class="page-header">
-      <h1 id="colecciones-titulo">Mis colecciones</h1>
-      <a href="{% url 'collections:collection_create' %}" class="btn btn-primary">+ Nueva colección</a>
-    </header>
+    <section aria-labelledby="colecciones-titulo">
+        <header class="page-header">
+            <h1 id="colecciones-titulo">Mis colecciones</h1>
+            <a href="{% url 'collections:collection_create' %}" class="btn btn-primary">+ Nueva colecciÃ³n</a>
+        </header>
 
-    {% if collections %}
-      <ul class="collection-grid" role="list">
-        {% for col in collections %}
-          <li class="collection-card">
-            <a href="{% url 'collections:collection_detail' col.slug %}" class="collection-card__link">
-              <div class="collection-card__meta">
-                <span class="badge">{{ col.get_category_display }}</span>
-                <span class="badge badge--secondary">{{ col.get_visibility_display }}</span>
-              </div>
-              <h2 class="collection-card__name">{{ col.name }}</h2>
-              {% if col.description %}
-                <p class="collection-card__desc">{{ col.description|truncatechars:80 }}</p>
-              {% endif %}
-            </a>
-            <nav class="collection-card__actions" aria-label="Acciones para {{ col.name }}">
-              <a href="{% url 'collections:collection_edit' col.slug %}">Editar</a>
-              <a href="{% url 'collections:collection_delete' col.slug %}" class="link-danger">Eliminar</a>
-            </nav>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="empty-state">No tienes colecciones todavía. ¡Crea la primera!</p>
-    {% endif %}
-  </section>
+        {% if collections %}
+            <ul class="collection-grid" role="list">
+                {% for col in collections %}
+                    <li class="collection-card">
+                        <a href="{% url 'collections:collection_detail' col.slug %}" class="collection-card__link">
+                            <div class="collection-card__meta">
+                                <span class="badge">{{ col.get_category_display }}</span>
+                                <span class="badge badge--secondary">{{ col.get_visibility_display }}</span>
+                            </div>
+                            <h2 class="collection-card__name">{{ col.name }}</h2>
+                            {% if col.description %}
+                                <p class="collection-card__desc">{{ col.description|truncatechars:80 }}</p>
+                            {% endif %}
+                        </a>
+                        <nav class="collection-card__actions" aria-label="Acciones para {{ col.name }}">
+                            <a href="{% url 'collections:collection_edit' col.slug %}">Editar</a>
+                            <a href="{% url 'collections:collection_delete' col.slug %}" class="link-danger">Eliminar</a>
+                        </nav>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">No tienes colecciones todavÃ­a. Â¡Crea la primera!</p>
+        {% endif %}
+    </section>
 {% endblock %}
