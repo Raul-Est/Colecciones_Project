@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+# Software privativo. Uso no autorizado expresamente prohibido.
 """Django's command-line utility for administrative tasks."""
 import os
 import sys

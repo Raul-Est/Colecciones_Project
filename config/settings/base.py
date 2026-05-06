@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+# Software privativo. Uso no autorizado expresamente prohibido.
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent

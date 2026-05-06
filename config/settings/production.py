@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados.
+# Software privativo. Uso no autorizado expresamente prohibido.
 import os
 
 from .base import *  # noqa: F401, F403, F405
