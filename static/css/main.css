@@ -1,0 +1,45 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #222;
+  background: #fafafa;
+}
+
+header nav {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+main {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.messages {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.messages li {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: #e8f4fd;
+  border-left: 4px solid #3b82f6;
+}
