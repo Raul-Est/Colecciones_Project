@@ -18,9 +18,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # apps propias
-    'apps.users',
-    'apps.collections',
-    'apps.audit',
+    'apps.users.apps.UsersConfig',
+    'apps.collections.apps.CollectionsConfig',
+    'apps.audit.apps.AuditConfig',
     'apps.common',
 ]
 

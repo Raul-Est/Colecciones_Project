@@ -1,0 +1,14 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+{% extends "base.html" %}
+
+{% block title %}Eliminar elemento{% endblock %}
+
+{% block content %}
+  <h1>Eliminar elemento</h1>
+  <p>¿Seguro que quieres eliminar <strong>{{ object.name }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'collections:collection_detail' collection.slug %}">Cancelar</a>
+  </form>
+{% endblock %}

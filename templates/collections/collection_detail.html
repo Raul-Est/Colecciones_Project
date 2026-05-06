@@ -1,0 +1,31 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+{% extends "base.html" %}
+
+{% block title %}{{ collection.name }}{% endblock %}
+
+{% block content %}
+  <h1>{{ collection.name }}</h1>
+  <p>{{ collection.get_category_display }} · {{ collection.get_visibility_display }}</p>
+  {% if collection.description %}<p>{{ collection.description }}</p>{% endif %}
+
+  <a href="{% url 'collections:collection_edit' collection.slug %}">[editar colección]</a>
+  <a href="{% url 'collections:collection_delete' collection.slug %}">[eliminar colección]</a>
+  <a href="{% url 'collections:collection_list' %}">[volver]</a>
+
+  <h2>Elementos</h2>
+  <a href="{% url 'collections:item_create' collection.slug %}">Añadir elemento</a>
+
+  {% if items %}
+    <ul>
+      {% for item in items %}
+        <li>
+          {{ item.name }} — {{ item.get_status_display }}
+          <a href="{% url 'collections:item_edit' collection.slug item.slug %}">[editar]</a>
+          <a href="{% url 'collections:item_delete' collection.slug item.slug %}">[eliminar]</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Esta colección no tiene elementos.</p>
+  {% endif %}
+{% endblock %}

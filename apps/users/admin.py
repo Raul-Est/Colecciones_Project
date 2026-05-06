@@ -26,7 +26,9 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Datos personales', {'fields': ('first_name', 'last_name')}),
         ('Estado', {'fields': ('account_status', 'email_verified', 'mfa_enabled')}),
-        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permisos', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
         ('Fechas', {'fields': ('date_joined', 'last_login', 'last_password_change')}),
     )
 

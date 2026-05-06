@@ -55,7 +55,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     email_verified = models.BooleanField(default=False, verbose_name='email verificado')
     mfa_enabled = models.BooleanField(default=False, verbose_name='MFA habilitado')
-    last_password_change = models.DateTimeField(null=True, blank=True, verbose_name='último cambio de contraseña')
+    last_password_change = models.DateTimeField(
+        null=True, blank=True, verbose_name='último cambio de contraseña'
+    )
 
     date_joined = models.DateTimeField(default=timezone.now, verbose_name='fecha de alta')
 

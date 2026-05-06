@@ -1,0 +1,24 @@
+<!-- Copyright (c) 2026 Raúl Esteban Posadilla. Todos los derechos reservados. -->
+{% extends "base.html" %}
+
+{% block title %}Mis colecciones{% endblock %}
+
+{% block content %}
+  <h1>Mis colecciones</h1>
+  <a href="{% url 'collections:collection_create' %}">Nueva colección</a>
+
+  {% if collections %}
+    <ul>
+      {% for col in collections %}
+        <li>
+          <a href="{% url 'collections:collection_detail' col.slug %}">{{ col.name }}</a>
+          — {{ col.get_category_display }} — {{ col.get_visibility_display }}
+          <a href="{% url 'collections:collection_edit' col.slug %}">[editar]</a>
+          <a href="{% url 'collections:collection_delete' col.slug %}">[eliminar]</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No tienes colecciones todavía.</p>
+  {% endif %}
+{% endblock %}
