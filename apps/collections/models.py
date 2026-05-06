@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
+from .validators import rename_cover, validate_cover
+
 
 class Collection(models.Model):
 
@@ -88,7 +90,8 @@ class CollectionItem(models.Model):
         verbose_name='estado',
     )
     cover = models.ImageField(
-        upload_to='covers/',
+        upload_to=rename_cover,
+        validators=[validate_cover],
         null=True,
         blank=True,
         verbose_name='carátula',

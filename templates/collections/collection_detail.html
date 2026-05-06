@@ -4,28 +4,64 @@
 {% block title %}{{ collection.name }}{% endblock %}
 
 {% block content %}
-  <h1>{{ collection.name }}</h1>
-  <p>{{ collection.get_category_display }} · {{ collection.get_visibility_display }}</p>
-  {% if collection.description %}<p>{{ collection.description }}</p>{% endif %}
+  <article aria-labelledby="col-titulo">
+    <header class="page-header">
+      <div>
+        <h1 id="col-titulo">{{ collection.name }}</h1>
+        <p class="meta">
+          <span class="badge">{{ collection.get_category_display }}</span>
+          <span class="badge badge--secondary">{{ collection.get_visibility_display }}</span>
+        </p>
+        {% if collection.description %}
+          <p>{{ collection.description }}</p>
+        {% endif %}
+      </div>
+      <nav aria-label="Acciones de la colección">
+        <a href="{% url 'collections:collection_edit' collection.slug %}" class="btn">Editar</a>
+        <a href="{% url 'collections:collection_delete' collection.slug %}" class="btn btn-danger">Eliminar</a>
+        <a href="{% url 'collections:collection_list' %}">&#8592; Mis colecciones</a>
+      </nav>
+    </header>
 
-  <a href="{% url 'collections:collection_edit' collection.slug %}">[editar colección]</a>
-  <a href="{% url 'collections:collection_delete' collection.slug %}">[eliminar colección]</a>
-  <a href="{% url 'collections:collection_list' %}">[volver]</a>
+    <section aria-labelledby="items-titulo">
+      <header class="section-header">
+        <h2 id="items-titulo">Elementos</h2>
+        <a href="{% url 'collections:item_create' collection.slug %}" class="btn btn-primary">+ Añadir elemento</a>
+      </header>
 
-  <h2>Elementos</h2>
-  <a href="{% url 'collections:item_create' collection.slug %}">Añadir elemento</a>
-
-  {% if items %}
-    <ul>
-      {% for item in items %}
-        <li>
-          {{ item.name }} — {{ item.get_status_display }}
-          <a href="{% url 'collections:item_edit' collection.slug item.slug %}">[editar]</a>
-          <a href="{% url 'collections:item_delete' collection.slug item.slug %}">[eliminar]</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Esta colección no tiene elementos.</p>
-  {% endif %}
+      {% if items %}
+        <ul class="item-grid" role="list">
+          {% for item in items %}
+            <li class="item-card">
+              {% if item.cover %}
+                <img
+                  src="{{ item.cover.url }}"
+                  alt="Carátula de {{ item.name }}"
+                  class="item-card__cover"
+                  width="120"
+                  height="120"
+                  loading="lazy"
+                />
+              {% else %}
+                <div class="item-card__cover item-card__cover--placeholder" aria-hidden="true"></div>
+              {% endif %}
+              <div class="item-card__body">
+                <h3 class="item-card__name">{{ item.name }}</h3>
+                <span class="badge">{{ item.get_status_display }}</span>
+                {% if item.description %}
+                  <p class="item-card__desc">{{ item.description|truncatechars:60 }}</p>
+                {% endif %}
+              </div>
+              <nav class="item-card__actions" aria-label="Acciones para {{ item.name }}">
+                <a href="{% url 'collections:item_edit' collection.slug item.slug %}">Editar</a>
+                <a href="{% url 'collections:item_delete' collection.slug item.slug %}" class="link-danger">Eliminar</a>
+              </nav>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty-state">Esta colección no tiene elementos todavía.</p>
+      {% endif %}
+    </section>
+  </article>
 {% endblock %}

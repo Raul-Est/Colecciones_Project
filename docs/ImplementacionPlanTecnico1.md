@@ -18,11 +18,9 @@ Importante:
 4. Decidir si se usara requirements o pyproject como gestion principal.
 5. Tener claro que la base de datos objetivo es PostgreSQL.
 
-## 3. Bloque A ejecutable
+## 3. Bloque A ejecutable — COMPLETADO
 
-### Paso A1. Crear la estructura raiz del repositorio
-
-Crear esta estructura base:
+Estado: todos los pasos A1-A10 implementados y validados.
 
 - manage.py
 - .env.example
@@ -353,27 +351,15 @@ Hecho cuando:
 
 - la identidad del sistema esta defendida por pruebas.
 
-## 5. Beta 1 ejecutable
+## 5. Beta 1 ejecutable — COMPLETADA
 
-Preparar una demo con:
+Login, registro, perfil básico, sesión estable y admin funcional. 35 tests pasando.
 
-- login;
-- registro;
-- perfil basico;
-- sesion estable;
-- admin util.
+## 6. Bloque C ejecutable — COMPLETADO
 
-No pasar al siguiente bloque si:
-
-- el login falla;
-- el custom user no esta consolidado;
-- los permisos base siguen ambiguos.
-
-## 6. Bloque C ejecutable
+Estado: todos los pasos C1-C9 implementados y validados. 28 tests nuevos, 63 en total.
 
 ### Paso C1. Crear la app collections
-
-Crear:
 
 - apps/collections/__init__.py
 - apps/collections/apps.py
@@ -502,80 +488,77 @@ Hecho cuando:
 
 - el corazon funcional esta cubierto por pruebas.
 
-## 7. Bloque D ejecutable
+## 7. Bloque D ejecutable — COMPLETADO
 
-### Paso D1. Preparar imagenes y caratulas
+Estado: todos los pasos D1-D6 implementados y validados. 13 tests nuevos, 76 en total.
 
-Si se mantiene dentro de collections, implementar el modelo ahi. Si se separa, crear un modulo especifico de media.
+Dependencia instalada: nudenet 3.4.2 (clasificador local de contenido inapropiado, sin envio a terceros).
 
-Definir:
+### Paso D1. Preparar imagenes y caratulas — COMPLETADO
 
-- relacion con item;
-- archivo;
-- origen;
-- alt_text;
-- mime_type;
-- size;
-- dimensiones;
-- timestamps.
+El campo `cover` (ImageField) ya existe en CollectionItem desde el Bloque C.
+No se ha separado en modelo propio; la primera version lo mantiene embebido.
 
-Hecho cuando:
+### Paso D2. Implementar subida segura — COMPLETADO
 
-- la imagen ya es una entidad controlada y no un campo improvisado.
+Archivo: apps/collections/validators.py
 
-### Paso D2. Implementar subida segura
+Validaciones implementadas en orden:
 
-Aplicar:
+1. Extension del archivo: solo jpg, jpeg, png, webp.
+2. Tipo MIME real: leer cabecera de bytes con Pillow, no confiar en la extension.
+3. Tamaño maximo: 5 MB.
+4. Dimensiones: minimo 100x100 px, maximo 4000x4000 px.
+5. Renombrado con UUID: el nombre original nunca llega al disco.
+6. NudeNet: clasificador local; si detecta contenido explicito con score >= 0.6, rechaza con ValidationError.
 
-- validacion real de tipo;
-- validacion de tamaño;
-- validacion de dimensiones;
-- nombres no predecibles;
-- reprocesado si procede.
+Conexion con el modelo:
 
-Hecho cuando:
+- El validator se añade al campo `cover` de CollectionItem.
+- El formulario CollectionItemForm lo activa automaticamente.
+- El error aparece en el formulario antes de guardar, sin persistir el archivo.
 
-- la subida de media no rompe la postura de seguridad.
+### Paso D3. Asociar imagenes a elementos — COMPLETADO
 
-### Paso D3. Asociar imagenes a elementos
+- CollectionItemForm tiene el campo cover.
+- item_form.html usa enctype="multipart/form-data".
+- Los elementos se muestran con caratula en collection_detail.html y en el listado.
+- Los elementos sin caratula muestran un placeholder con CSS.
 
-Tareas:
+### Paso D4. Mejorar interfaz — COMPLETADO
 
-1. integrar en formulario;
-2. impedir asociaciones ajenas;
-3. mostrar las caratulas en detalle y listado.
+- Grid de cards para colecciones e items en static/css/main.css.
+- Badges de categoria y visibilidad.
+- Layout coherente en listados y detalle.
 
-Hecho cuando:
+### Paso D5. Accesibilidad minima — COMPLETADO
 
-- los elementos ya se presentan con apoyo visual.
+- Alt text descriptivo en todas las imagenes: "Caratula de {item.name}".
+- Semantica HTML: article, section, nav, aria-labelledby, role="list".
+- Placeholders accesibles para elementos sin caratula.
 
-### Paso D4. Mejorar interfaz y accesibilidad minima
+### Paso D6. Probar el bloque D — COMPLETADO
 
-Revisar:
+Archivo: apps/collections/tests/test_validators.py (13 tests)
 
-- listados;
-- detalles;
-- texto alternativo;
-- semantica HTML;
-- claridad visual.
+Cobertura:
 
-Hecho cuando:
+- imagen valida pasa todos los validators;
+- extension no permitida rechazada;
+- tipo MIME falso rechazado;
+- imagen mayor de 5 MB rechazada;
+- imagen exactamente en el limite aceptada;
+- dimensiones pequeñas rechazadas;
+- dimensiones grandes rechazadas;
+- dimensiones validas aceptadas;
+- NudeNet score alto rechaza imagen (mock sin red);
+- NudeNet sin detecciones acepta imagen (mock);
+- NudeNet score bajo acepta imagen (mock);
+- NudeNet no instalado no bloquea la subida (mock ImportError).
 
-- el producto ya es enseñable sin parecer un prototipo crudo.
+## 8. Beta 2 ejecutable — LISTA PARA VALIDACION
 
-### Paso D5. Probar el bloque D
-
-Crear tests para:
-
-- subida segura;
-- permisos sobre imagenes;
-- integracion visual principal.
-
-Hecho cuando:
-
-- la funcionalidad visual queda validada.
-
-## 8. Beta 2 ejecutable
+Bloque D completado. 76 tests pasando. 0 errores ruff.
 
 La demo cliente de Beta 2 debe incluir:
 
@@ -586,11 +569,13 @@ La demo cliente de Beta 2 debe incluir:
 - caratulas;
 - navegacion coherente.
 
-No pasar a la segunda mitad del plan si:
+Criterios de cierre cumplidos:
 
-- hay fugas de ownership;
-- la subida de imagenes no esta asegurada;
-- las reglas de identidad siguen inestables.
+- no hay fugas de ownership (6 tests de ownership pasando);
+- la subida de imagenes esta asegurada con validators + NudeNet (13 tests);
+- las reglas de identidad son estables (35 tests de users pasando).
+
+Pendiente: ejecutar demo manual con registro+login+colecciones+elementos+caratulas antes de pasar a PlanTecnico2.md.
 
 ## 9. Siguiente paso natural
 

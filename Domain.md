@@ -201,14 +201,15 @@ Reglas:
 
 Representa cada unidad coleccionable.
 
-Campos sugeridos:
+Campos implementados:
 
-- colección.
+- colección (FK a Collection, CASCADE).
 - nombre.
-- slug opcional o identificador amigable.
+- slug generado automáticamente desde el nombre via slugify.
 - descripción.
-- comentario_personal opcional.
-- estado del elemento: pendiente, activo, archivado.
+- comentario personal (privado por defecto).
+- estado: en posesión, deseado, vendido, prestado.
+- carátula (ImageField, upload_to='covers/', validación segura obligatoria).
 - posición para ordenación manual.
 - timestamps.
 
@@ -216,28 +217,35 @@ Reglas:
 
 - No debe existir un elemento huérfano fuera de una colección.
 - El comentario personal debe tratarse como contenido privado salvo decisión explícita de visibilidad.
+- Las imágenes pasan por validación de tipo real, tamaño, dimensiones y análisis de contenido inapropiado antes de persistirse.
 
 #### Carátula o imagen
 
-Representa una imagen asociada a un elemento.
+El campo `cover` (ImageField) vive directamente en CollectionItem. No es una entidad separada en la primera versión.
 
-Campos sugeridos:
+Campos actuales:
 
-- elemento.
-- archivo.
-- origen: subida_usuario, catálogo_interno.
-- texto alternativo.
-- hash del fichero para deduplicación si se desea.
-- tipo MIME validado.
-- tamaño.
-- ancho y alto si se procesan.
-- timestamps.
+- archivo (ImageField, upload_to='covers/').
+- nombre no predecible generado en tiempo de subida.
+- tipo MIME validado contra la cabecera real del fichero.
+- tamaño máximo: 5 MB.
+- dimensiones validadas.
+
+Validaciones aplicadas antes de persistir (apps/collections/validators.py):
+
+1. Extensión permitida: jpg, jpeg, png, webp.
+2. Tipo MIME real (no la extensión declarada).
+3. Tamaño máximo 5 MB.
+4. Dimensiones mínimas y máximas razonables.
+5. Nombre renombrado con UUID para que sea no predecible.
+6. Análisis de contenido inapropiado con NudeNet (modelo local, sin envío a terceros).
 
 Reglas:
 
 - Nunca confiar en la extensión del archivo.
 - Validar tipo real, tamaño máximo y dimensiones razonables.
 - Almacenar con nombres no predecibles.
+- Rechazar imágenes con contenido explícito detectado por NudeNet.
 - Separar media privada de pública si el modelo de permisos lo necesita.
 
 #### Registro de auditoría
@@ -312,10 +320,12 @@ La seguridad es un requisito estructural, no una mejora posterior.
 
 ### 6.4 Seguridad de ficheros
 
-- Validar contenido real de imágenes.
+- Validar contenido real de imágenes (cabecera de bytes, no extensión declarada).
 - Reprocesar imágenes subidas para eliminar contenido no esperado.
 - No servir media privada directamente desde rutas inseguras.
-- Limitar tamaño, formato y frecuencia de subida.
+- Limitar tamaño (5 MB), formato (jpg, png, webp) y frecuencia de subida.
+- Nombres de archivo renombrados con UUID en tiempo de subida.
+- Análisis de contenido inapropiado con NudeNet (clasificador local, sin dependencia externa).
 - Analizar la necesidad de escaneo antivirus si el riesgo crece.
 
 ### 6.5 Seguridad de aplicación Django
@@ -416,29 +426,30 @@ colecciones_project/
 │   ├── users/
 │   │   ├── __init__.py
 │   │   ├── apps.py
-│   │   ├── admin.py
+│   │   ├── admin.py                   # ✅ implementado: UserAdmin con ProfileInline
 │   │   ├── backends.py                # backend de autenticación por email (AUTHENTICATION_BACKENDS)
-│   │   ├── forms.py
+│   │   ├── forms.py                   # ✅ implementado: RegisterForm, LoginForm
 │   │   ├── managers.py                # UserManager personalizado desacoplado del modelo
-│   │   ├── models.py
+│   │   ├── models.py                  # ✅ implementado: User (email auth) + Profile
 │   │   ├── selectors.py
 │   │   ├── services.py
 │   │   ├── signals.py                 # crea Profile automáticamente al crear User (post_save)
 │   │   ├── tokens.py                  # generador de tokens para verificación de email y reset
-│   │   ├── urls.py
-│   │   ├── views.py
-│   │   └── tests/
+│   │   ├── urls.py                    # ✅ implementado: register, login, logout, dashboard
+│   │   ├── views.py                   # ✅ implementado: register, login, logout, dashboard
+│   │   └── tests/                     # ✅ 35 tests: modelos, vistas, permisos
 │   ├── collections/
 │   │   ├── __init__.py
-│   │   ├── apps.py
-│   │   ├── admin.py
-│   │   ├── forms.py
-│   │   ├── models.py
-│   │   ├── selectors.py
-│   │   ├── services.py
-│   │   ├── urls.py
-│   │   ├── views.py
-│   │   └── tests/
+│   │   ├── apps.py                    # ✅ implementado
+│   │   ├── admin.py                   # ✅ implementado: CollectionAdmin + CollectionItemInline
+│   │   ├── forms.py                   # ✅ implementado: CollectionForm, CollectionItemForm
+│   │   ├── models.py                  # ✅ implementado: Collection + CollectionItem
+│   │   ├── selectors.py               # ✅ implementado: consultas optimizadas por owner
+│   │   ├── services.py                # ✅ implementado: create/update collection e item
+│   │   ├── urls.py                    # ✅ implementado: CRUD colecciones e items
+│   │   ├── validators.py              # ✅ implementado: extensión, MIME real, tamaño, dimensiones, NudeNet
+│   │   ├── views.py                   # ✅ implementado: CRUD con ownership enforced
+│   │   └── tests/                     # ✅ 41 tests: modelos, vistas, ownership, validators
 │   ├── billing/
 │   │   ├── __init__.py
 │   │   ├── admin.py                   # gestión de planes y suscripciones visible en el admin de Django

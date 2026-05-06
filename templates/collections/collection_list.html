@@ -4,21 +4,35 @@
 {% block title %}Mis colecciones{% endblock %}
 
 {% block content %}
-  <h1>Mis colecciones</h1>
-  <a href="{% url 'collections:collection_create' %}">Nueva colección</a>
+  <section aria-labelledby="colecciones-titulo">
+    <header class="page-header">
+      <h1 id="colecciones-titulo">Mis colecciones</h1>
+      <a href="{% url 'collections:collection_create' %}" class="btn btn-primary">+ Nueva colección</a>
+    </header>
 
-  {% if collections %}
-    <ul>
-      {% for col in collections %}
-        <li>
-          <a href="{% url 'collections:collection_detail' col.slug %}">{{ col.name }}</a>
-          — {{ col.get_category_display }} — {{ col.get_visibility_display }}
-          <a href="{% url 'collections:collection_edit' col.slug %}">[editar]</a>
-          <a href="{% url 'collections:collection_delete' col.slug %}">[eliminar]</a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No tienes colecciones todavía.</p>
-  {% endif %}
+    {% if collections %}
+      <ul class="collection-grid" role="list">
+        {% for col in collections %}
+          <li class="collection-card">
+            <a href="{% url 'collections:collection_detail' col.slug %}" class="collection-card__link">
+              <div class="collection-card__meta">
+                <span class="badge">{{ col.get_category_display }}</span>
+                <span class="badge badge--secondary">{{ col.get_visibility_display }}</span>
+              </div>
+              <h2 class="collection-card__name">{{ col.name }}</h2>
+              {% if col.description %}
+                <p class="collection-card__desc">{{ col.description|truncatechars:80 }}</p>
+              {% endif %}
+            </a>
+            <nav class="collection-card__actions" aria-label="Acciones para {{ col.name }}">
+              <a href="{% url 'collections:collection_edit' col.slug %}">Editar</a>
+              <a href="{% url 'collections:collection_delete' col.slug %}" class="link-danger">Eliminar</a>
+            </nav>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty-state">No tienes colecciones todavía. ¡Crea la primera!</p>
+    {% endif %}
+  </section>
 {% endblock %}

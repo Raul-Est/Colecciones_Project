@@ -96,7 +96,9 @@ class TestCollectionEditView:
 
     def test_post_actualiza(self, cliente_auth, coleccion):
         url = reverse('collections:collection_edit', kwargs={'slug': coleccion.slug})
-        data = {'name': 'Renombrada', 'description': '', 'category': 'games', 'visibility': 'public'}
+        data = {
+            'name': 'Renombrada', 'description': '', 'category': 'games', 'visibility': 'public',
+        }
         response = cliente_auth.post(url, data)
         assert response.status_code == 302
         coleccion.refresh_from_db()
